@@ -1,6 +1,7 @@
 # Hand Gesture Server
 
 ## download or clone the project
+
 ```
 git clone https://github.com/nocturnalplay/handgesture_processing_server.git
 ```
@@ -18,3 +19,8 @@ sudo pip install -r requirements.txt
 - if you are using a web cam in url = 0
 - are else url = 0.0.0.0:8000/video_stream
 
+## start the project
+
+```
+python3 start.py
+```

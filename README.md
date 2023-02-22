@@ -15,6 +15,6 @@ sudo pip install -r requirements.txt
 
 ## Replace the URL
 
---if you are using a web cam in url = 0
---are else url = 0.0.0.0:8000/video_stream
+- if you are using a web cam in url = 0
+- are else url = 0.0.0.0:8000/video_stream
 

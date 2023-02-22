@@ -1,7 +1,7 @@
 from handGesture import hand
 import cv2
 import mediapipe as mp
-import serverData as env
+from data import serverData as env
 from websockets import serve
 import asyncio
 import sys

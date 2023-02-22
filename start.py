@@ -1,46 +1,52 @@
+from handGesture import hand
 import cv2
 import mediapipe as mp
+import serverData as env
+from websockets import serve
+import asyncio
+import sys
 
-# url of the video streaming server
-url = "http://192.168.1.6:8000/video_feed"
 
-try:
-    mp_drawing = mp.solutions.drawing_utils
-    mp_hands = mp.solutions.hands
-
-    cap = cv2.VideoCapture(url)
-
-    with mp_hands.Hands(static_image_mode=False, max_num_hands=1, min_detection_confidence=0.5) as hands:
+async def Handler(websocket):
+    print("waiting for the client messgae")
+    print("data from the client:", await websocket.recv())
+    try:
+        hands = hand.Hand(max_hands=2)
+        cap = cv2.VideoCapture(env.STREAMING_SERVER_URL)
 
         while cap.isOpened():
             ret, frame = cap.read()
             if not ret:
                 print("Can't receive frame (stream end?). Exiting ...")
                 break
+            res = hand.DetectHands(frame, hands)
+            if not res['status']:
+                break
 
-            # Flip the frame horizontally for a later selfie-view display
-            frame = cv2.flip(frame, 1)
-
-            # Convert the image to RGB
-            image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-            # Process the image with mediapipe
-            results = hands.process(image)
-
-            # Draw the hand landmarks on the image
-            if results.multi_hand_landmarks:
-                for hand_landmarks in results.multi_hand_landmarks:
-                    mp_drawing.draw_landmarks(
-                        image, hand_landmarks, mp_hands.HAND_CONNECTIONS)
-
+            img = res["image"]
+            print(res["data"])
             # Display the resulting image
-            cv2.imshow('Hand Gestures', cv2.cvtColor(image, cv2.COLOR_RGB2BGR))
+            cv2.imshow('Hand Gestures', img)
             if cv2.waitKey(1) == ord('q'):
                 break
 
-    cap.release()
-    cv2.destroyAllWindows()
+        cap.release()
+        cv2.destroyAllWindows()
+        sys.exit()
+    except KeyboardInterrupt:
+        print("Force exit operation")
+        cap.release()
+        cv2.destroyAllWindows()
+        sys.exit()
+
+try:
+    async def main():
+        print(f"server created on {env.PORT} port")
+        async with serve(Handler, env.HOST, env.PORT, ping_interval=None):
+            await asyncio.Future()  # run forever
+    asyncio.run(main())
+
 except KeyboardInterrupt:
-    print("exit...operation")
-    cap.release()
+    print("Force exit operation")
     cv2.destroyAllWindows()
+    sys.exit()

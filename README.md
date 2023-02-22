@@ -1,5 +1,9 @@
 # Hand Gesture Server
 
+## web socket server
+
+> currently this is a single threaded webSocket server only serves if the client conneted to the web socket server
+
 ## download or clone the project
 
 ```
@@ -14,10 +18,11 @@ sudo apt install python3-pip
 sudo pip install -r requirements.txt
 ```
 
-## Replace the URL
+## Server configuration Details in serverData
 
-- if you are using a web cam in url = 0
-- are else url = 0.0.0.0:8000/video_stream
+- STREAMING_SERVER_URL = "" // url of the video streaming device
+- HOST = "" //configure server name
+- PORT = "" //and port
 
 ## start the project
 

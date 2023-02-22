@@ -5,21 +5,21 @@ import serverData as env
 from websockets import serve
 import asyncio
 import sys
+import requests
+import numpy as np
 
 
 async def Handler(websocket):
     print("waiting for the client messgae")
     print("data from the client:", await websocket.recv())
     try:
-        hands = hand.Hand(max_hands=1)
-        cap = cv2.VideoCapture(env.STREAMING_SERVER_URL)
+        hands = hand.Hand(max_hands=2)
 
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                print("Can't receive frame (stream end?). Exiting ...")
-                break
-            res = hand.DetectHands(frame, hands)
+        while 1:
+            responce = requests.get(env.FRAME_SERVER_URL)
+            img_array = np.array(bytearray(responce.content), dtype=np.uint8)
+            img = cv2.imdecode(img_array, -1)
+            res = hand.DetectHands(img, hands)
             if not res['status']:
                 break
 
@@ -30,12 +30,10 @@ async def Handler(websocket):
             if cv2.waitKey(1) == ord('q'):
                 break
 
-        cap.release()
         cv2.destroyAllWindows()
         sys.exit()
     except KeyboardInterrupt:
         print("Force exit operation")
-        cap.release()
         cv2.destroyAllWindows()
         sys.exit()
 

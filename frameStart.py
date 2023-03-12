@@ -7,6 +7,7 @@ import asyncio
 import sys
 import requests
 import numpy as np
+import json
 
 
 async def Handler(websocket):
@@ -25,6 +26,8 @@ async def Handler(websocket):
 
             img = res["image"]
             print(res["data"])
+            #send data to the websocket
+            #await websocket.send(json.loads(res['data']))
             # Display the resulting image
             cv2.imshow('Hand Gestures', img)
             if cv2.waitKey(1) == ord('q'):

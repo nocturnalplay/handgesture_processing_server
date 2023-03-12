@@ -5,14 +5,14 @@ from data import serverData as env
 from websockets import serve
 import asyncio
 import sys
-import json
+
 
 async def Handler(websocket):
     print("waiting for the client messgae")
     print("data from the client:", await websocket.recv())
     try:
         hands = hand.Hand(max_hands=1)
-        cap = cv2.VideoCapture(0)
+        cap = cv2.VideoCapture(env.STREAMING_SERVER_URL)
 
         while cap.isOpened():
             ret, frame = cap.read()
@@ -25,8 +25,6 @@ async def Handler(websocket):
 
             img = res["image"]
             print(res["data"])
-            #send data to the websocket
-            await websocket.send(json.dumps(res['data']))
             # Display the resulting image
             cv2.imshow('Hand Gestures', img)
             if cv2.waitKey(1) == ord('q'):
@@ -43,8 +41,8 @@ async def Handler(websocket):
 
 try:
     async def main():
-        print(f"server created on {env.PORT} port")
-        async with serve(Handler, env.HOST, env.PORT, ping_interval=None):
+        print(f"server created on 9001 port")
+        async with serve(Handler, env.HOST, 9001, ping_interval=None):
             await asyncio.Future()  # run forever
     asyncio.run(main())
 

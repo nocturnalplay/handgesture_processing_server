@@ -12,7 +12,7 @@ async def Handler(websocket):
     print("data from the client:", await websocket.recv())
     try:
         hands = hand.Hand(max_hands=1)
-        cap = cv2.VideoCapture(env.STREAMING_SERVER_URL)
+        cap = cv2.VideoCapture(0)
 
         while cap.isOpened():
             ret, frame = cap.read()

@@ -7,19 +7,28 @@ import json
 import math
 
 
-def findPercents(inp, mi, ma, v):
-    va = (inp - mi) * 100 / (ma - mi)
-    if v == 100:
+def findPercents(inp, dist, v):
+    max_dist = 250  # maximum distance in centimeters
+    scale_range = 255
+    scale_min = 0.5  # minimum scaling percentage
+    scale_max = 0.9  # maximum scaling percentage
+
+    scale_factor = scale_range / (max_dist * (scale_max - scale_min))
+    scaled_min = scale_factor * (dist * scale_min)
+    scaled_max = scale_factor * (dist * scale_max)
+
+    va = (inp - scaled_min) * scale_range / (scaled_max - scaled_min)
+
+    if v == 255:
         va = v - va
-    if va > 100:
-        return 100
+    if va > 255:
+        return 255
     elif va < 0:
         return 0
-    else:
-        return int(va)
+    return int(va)
 
 
-def RGB(right,img):
+def RGB(right, img):
     print("RGB Effect like Doctor Strange")
     # rgb x and y axis point
     x0, y0 = right[0][0], right[0][1]
@@ -32,24 +41,22 @@ def RGB(right,img):
     cv2.circle(img, (gx, gy), 8, (0, 255, 0), cv2.FILLED)
     cv2.circle(img, (bx, by), 8, (255, 0, 0), cv2.FILLED)
 
-     # lines for the eache shape in rgb
+    # lines for the eache shape in rgb
     cv2.line(img, (x0, y0), (rx, ry), (0, 0, 255), 2)
     cv2.line(img, (x0, y0), (gx, gy), (0, 255, 0), 2)
     cv2.line(img, (x0, y0), (bx, by), (255, 0, 0), 2)
     # connect in bellow bottom point of index 0
     cv2.circle(img, (x0, y0), 8, (255, 255, 255), cv2.FILLED)
-    Rlen = [findPercents(math.hypot(rx - x0, ry - y0), 155, 185, 0),
-                    findPercents(math.hypot(rx - x0, ry - y0), 155, 185, 100)]
-    Glen = [findPercents(math.hypot(gx - x0, gy - y0), 140, 240, 0),
-                    findPercents(math.hypot(gx - x0, gy - y0), 140, 240, 100)]
-    Blen = [findPercents(math.hypot(bx - x0, by - y0), 120, 260, 0),
-                    findPercents(math.hypot(bx - x0, by - y0), 120, 260, 100)]
-
-    rgb = [Rlen[1], Glen[1], Blen[1]]
+    Rlen = findPercents(math.hypot(rx - x0, ry - y0), 50, 0)
+    Glen = findPercents(math.hypot(gx - x0, gy - y0), 50, 0)
+    Blen = findPercents(math.hypot(bx - x0, by - y0), 50, 0)
+    rgb = [Rlen, Glen, Blen]
+    print(math.hypot(gx - x0, gy - y0))
     return rgb
 
+
 async def test():
-    async with websockets.connect('ws://192.168.1.5:80') as websocket:
+    async with websockets.connect('ws://192.168.1.6:80') as websocket:
         hands = hand.Hand(max_hands=1)
         cap = cv2.VideoCapture(0)
 
@@ -66,8 +73,8 @@ async def test():
             # print(data)
 
             if "right" in data and len(data["right"]):
-                rgbdata = RGB(data["right"],img)
-                print(rgbdata)
+                rgbdata = RGB(data["right"], img)
+                # print(rgbdata)
                 await websocket.send(json.dumps(rgbdata))
 
             # Display the resulting image
@@ -77,6 +84,5 @@ async def test():
 
         cap.release()
         cv2.destroyAllWindows()
-        sys.exit()
- 
+
 asyncio.get_event_loop().run_until_complete(test())
